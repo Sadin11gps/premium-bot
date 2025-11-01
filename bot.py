@@ -119,7 +119,7 @@ def create_table_if_not_exists():
                 requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         """)
-          
+           
 # --- VERIFY SYSTEM মাইগ্রেশন শেষ --- 
            conn.commit()
             
