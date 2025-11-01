@@ -69,7 +69,6 @@ def create_table_if_not_exists():
                     referrer_id BIGINT DEFAULT NULL
                 );
             """)
-          def create_table_if_not_exists():
     conn = connect_db()
     if conn is None:
         return
@@ -110,8 +109,7 @@ def create_table_if_not_exists():
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS verify_requests (
                 request_id SERIAL PRIMARY KEY,
-                user_id BIGINT NOT NULL,
-                username VARCHAR(255),
+                user_id BIGINT NOT NUL                username VARCHAR(255),
                 method VARCHAR(50) NOT NULL,
                 tnx_id VARCHAR(255) NOT NULL,
                 amount FLOAT NOT NULL,
