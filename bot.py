@@ -69,7 +69,59 @@ def create_table_if_not_exists():
                     referrer_id BIGINT DEFAULT NULL
                 );
             """)
-            conn.commit()
+          def create_table_if_not_exists():
+    conn = connect_db()
+    if conn is None:
+        return
+    
+    cursor = conn.cursor()
+    
+    try:
+        # ১. আপনার বিদ্যমান 'users' টেবিল তৈরির কোড (যা আপনি আগে তৈরি করেছিলেন)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                user_id BIGINT PRIMARY KEY,
+                status TEXT DEFAULT 'active',
+                is_premium BOOLEAN DEFAULT FALSE,
+                expiry_date TIMESTAMP NULL,
+                premium_balance DECIMAL(10, 2) DEFAULT 0.00,
+                free_income DECIMAL(10, 2) DEFAULT 0.00,
+                refer_balance DECIMAL(10, 2) DEFAULT 0.00,
+                salary_balance DECIMAL(10, 2) DEFAULT 0.00,
+                total_withdraw DECIMAL(10, 2) DEFAULT 0.00,
+                wallet_address TEXT,
+                referrer_id BIGINT DEFAULT NULL
+            );
+        """)
+
+        # ২. আপনার বিদ্যমান 'referrals' বা অন্যান্য টেবিল তৈরির কোড (যদি থাকে)
+        # যেমন:
+        # cursor.execute("CREATE TABLE IF NOT EXISTS referrals (...);")
+        
+        # --- VERIFY SYSTEM মাইগ্রেশন (নতুন যোগ করুন) ---
+        
+        # ৩. 'users' টেবিলে নতুন কলাম যোগ করা (VERIFY এর জন্য)
+        cursor.execute("""
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS 
+            verify_expiry_date TIMESTAMP NULL;
+        """)
+        
+        # ৪. নতুন 'verify_requests' টেবিল তৈরি করা
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS verify_requests (
+                request_id SERIAL PRIMARY KEY,
+                user_id BIGINT NOT NULL,
+                username VARCHAR(255),
+                method VARCHAR(50) NOT NULL,
+                tnx_id VARCHAR(255) NOT NULL,
+                amount FLOAT NOT NULL,
+                status VARCHAR(50) DEFAULT 'pending',
+                requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+          
+# --- VERIFY SYSTEM মাইগ্রেশন শেষ --- 
+           conn.commit()
             
             # ২. অনুপস্থিত কলামগুলো যোগ করা (মাইগ্রেশন ফিক্স)
             columns_to_add = [
