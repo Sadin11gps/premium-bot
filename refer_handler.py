@@ -5,8 +5,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Fetching the referral bonus constant from bot.py
-REFERRAL_BONUS_JOINING = main_bot.REFERRAL_BONUS_JOINING 
+# Fetching the referral bonus constant - CRITICAL FIX: To avoid Circular Dependency, set the value directly.
+REFERRAL_BONUS_JOINING = 40.00 
 
 # -----------------
 # 1. Referral Command Handler
