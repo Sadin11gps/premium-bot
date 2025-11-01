@@ -22,15 +22,15 @@ logger = logging.getLogger(__name__)
 # -----------------
 # সিকিউরিটি আপডেট: গোপন তথ্য পরিবেশ ভেরিয়েবল থেকে নেওয়া হচ্ছে
 BOT_TOKEN = os.environ.get("BOT_TOKEN") 
-DATABASE_URL = os.environ.get("DATABASE_URL")  
+DATABASE_URL = os.environ.get("DATABASE_URL") 
 
-# # ----------------------------------------------------
-# # Global Bot Settings and Constants (এই অংশটি যোগ করুন)
-# # ----------------------------------------------------
+# বোনাস কনস্ট্যান্ট (আপনার দেওয়া মান অনুযায়ী) - CRITICAL FIX #1: REFERRAL_BONUS_JOINING যোগ করা হয়েছে
 REFERRAL_BONUS_JOINING = 40.00 
-# # ----------------------------------------------------
 
-# ...
+# -----------------
+# ২. ডেটাবেস কানেকশন ও ইউজার টেবিল তৈরি/পড়া
+# -----------------
+
 def connect_db():
     """Render ডেটাবেসের সাথে যুক্ত হয়"""
     try:
@@ -106,9 +106,10 @@ def create_table_if_not_exists():
             cursor.close()
             conn.close()
 
-# ----------------------------------------------------
+
+# -----------------
 # ৩. ইউজার রেজিস্ট্রেশন ও রেফারেল বোনাস লজিক
-# ----------------------------------------------------
+# -----------------
 def register_user(user_id, referrer_id=None):
     """নতুন ইউজারকে রেজিস্টার করে এবং রেফারিকে বোনাস প্রদান করে (যদি থাকে)"""
     conn = connect_db()
@@ -160,6 +161,10 @@ def register_user(user_id, referrer_id=None):
         cursor.close()
         conn.close()
 
+# -----------------
+# ৪. ডেটাবেস থেকে ইউজারের স্ট্যাটাস নেওয়ার ফাংশন (Profile Handler এর জন্য) - CRITICAL FIX #2: get_user_status সম্পূর্ণ করা হয়েছে
+# -----------------
+
 def get_user_status(user_id):
     """
     ডেটাবেস থেকে ইউজারের সমস্ত প্রোফাইল ডেটা (ব্যালেন্স, স্ট্যাটাস ইত্যাদি) প্রদান করে।
@@ -173,7 +178,7 @@ def get_user_status(user_id):
         # সমস্ত প্রয়োজনীয় কলাম ফেচ করা
         cursor.execute(
             """
-            SELECT balance, free_income, refer_balance, salary_balance, 
+            SELECT premium_balance, free_income, refer_balance, salary_balance, 
                    total_withdraw, is_premium, expiry_date
             FROM users 
             WHERE user_id = %s
@@ -190,14 +195,15 @@ def get_user_status(user_id):
         return status
         
     except Exception as e:
-        logger.error(f"ইউজার স্ট্যাটাস ফেচ করতে সমস্যা: {e}")
+        logger.error(f"Error fetching user status for {user_id}: {e}")
         return None
     finally:
         cursor.close()
         conn.close()
 
+
 # -----------------
-# ৪. বাটন ডিজাইন
+# ৫. বাটন ডিজাইন
 # -----------------
 
 # ক) মূল মেনুর বাটন (Reply Keyboard) - সমস্ত বাটন যুক্ত করা হয়েছে
@@ -216,7 +222,7 @@ premium_inline_keyboard = [
 premium_inline_markup = InlineKeyboardMarkup(premium_inline_keyboard)
 
 # -----------------
-# ৫. হ্যান্ডলার ফাংশন
+# ৬. হ্যান্ডলার ফাংশন
 # -----------------
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -229,7 +235,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             potential_referrer_id = int(context.args[0])
             
-            # নিজের রেফারেল লিঙ্ক দিয়ে নিজে জয়েন করতে পারবে না
+            # নিজের রেফারেল লিঙ্ক দিয়ে নিজে জয়েন করতে পারবে না
             if potential_referrer_id != user.id:
                 referrer_id = potential_referrer_id
             else:
@@ -294,7 +300,7 @@ async def handle_inline_callbacks(update: Update, context: ContextTypes.DEFAULT_
 
 
 # -----------------
-# ৬. মূল ফাংশন
+# ৭. মূল ফাংশন
 # -----------------
 
 def main():
