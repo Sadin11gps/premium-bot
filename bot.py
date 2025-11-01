@@ -160,6 +160,32 @@ def register_user(user_id, referrer_id=None):
         cursor.close()
         conn.close()
 
+# ----------------------------------------------------
+# ডেটাবেস ফাংশন: ইউজারের সমস্ত স্ট্যাটাস ও ব্যালেন্স ফেচ করা
+# ----------------------------------------------------
+def get_user_status(user_id):
+    """ইউজারের সমস্ত ডেটাবেস স্ট্যাটাস ফেচ করে।"""
+    conn = connect_db()
+    if not conn:
+        return None
+        
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            """
+            SELECT is_premium, expiry_date, premium_balance, free_income, refer_balance, salary_balance, total_withdraw 
+            FROM users WHERE user_id = %s
+            """, 
+            (user_id,)
+        )
+        return cursor.fetchone()
+    except Exception as e:
+        logger.error(f"ইউজার স্ট্যাটাস ফেচ করতে সমস্যা: {e}")
+        return None
+    finally:
+        cursor.close()
+        conn.close()
+
 # -----------------
 # ৪. বাটন ডিজাইন
 # -----------------
