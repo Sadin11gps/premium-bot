@@ -66,16 +66,13 @@ def create_table_if_not_exists():
                     total_withdraw DECIMAL(10, 2) DEFAULT 0.00,
                     
                     wallet_address TEXT,
-                    referrer_id BIGINT DEFAULT NULL
-                );
-            """)
+                    referrer_id BIGINT DEFAULT NULLz
     conn = connect_db()
     if conn is None:
         return
-    
-    cursor = conn.cursor()
-    
-    try:
+            );
+        """)
+
         # ১. আপনার বিদ্যমান 'users' টেবিল তৈরির কোড (যা আপনি আগে তৈরি করেছিলেন)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS users (
