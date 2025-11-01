@@ -3,102 +3,79 @@ from telegram.ext import ContextTypes
 import bot as main_bot 
 import logging
 
-# লগিং সেটআপ
 logger = logging.getLogger(__name__)
 
-# -----------------
-# ডেটাবেস ফাংশন (আপডেট করা হয়েছে)
-# -----------------
-def get_referral_data(user_id: int):
-    """ইউজারের রেফার সংখ্যা, রেফার ব্যালেন্স এবং প্রিমিয়াম রেফার সংখ্যা ফেচ করে"""
-    conn = main_bot.connect_db()
-    
-    # রিটার্ন ভেরিয়েবল
-    referral_count_total = 0
-    referral_count_premium = 0
-    refer_balance = 0.0
-    
-    if conn:
-        cursor = conn.cursor()
-        try:
-            # ১. মোট রেফার সংখ্যা গণনা করা (যারা জয়েন করেছে)
-            cursor.execute(
-                "SELECT COUNT(*) FROM users WHERE referrer_id = %s", 
-                (user_id,)
-            )
-            referral_count_total = cursor.fetchone()[0]
-            
-            # ২. প্রিমিয়াম রেফার সংখ্যা গণনা করা (যারা প্রিমিয়াম নিয়েছে)
-            cursor.execute(
-                "SELECT COUNT(*) FROM users WHERE referrer_id = %s AND is_premium = TRUE", 
-                (user_id,)
-            )
-            referral_count_premium = cursor.fetchone()[0]
-            
-            # ৩. রেফার ব্যালেন্স ফেচ করা 
-            cursor.execute(
-                "SELECT refer_balance FROM users WHERE user_id = %s", 
-                (user_id,)
-            )
-            balance_result = cursor.fetchone()
-            if balance_result and balance_result[0] is not None:
-                refer_balance = balance_result[0]
-            
-        except Exception as e:
-            logger.error(f"রেফারেল ডেটা পেতে সমস্যা: {e}")
-        finally:
-            cursor.close()
-            conn.close()
-    
-    # প্রিমিয়াম নয় এমন সদস্যের সংখ্যা
-    referral_count_new = referral_count_total - referral_count_premium
-    
-    return referral_count_total, referral_count_new, referral_count_premium, refer_balance
+# Fetching the referral bonus constant from bot.py
+REFERRAL_BONUS_JOINING = main_bot.REFERRAL_BONUS_JOINING 
 
 # -----------------
-# রেফারেল মেসেজ তৈরির ফাংশন (আপডেট করা হয়েছে)
+# 1. Referral Command Handler
 # -----------------
 
 async def refer_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """'📢 REFER 🎁' বাটনে ক্লিক করলে ইউজারের রেফারেল তথ্য দেখায়।"""
+    """Handles the '📢 REFER 🎁' button click and displays referral info."""
     user = update.effective_user
     user_id = user.id
 
-    # ডেটাবেস থেকে ডেটা আনা
-    total, new_members, premium_members, refer_balance = get_referral_data(user_id)
+    conn = main_bot.connect_db()
     
-    refer_balance_formatted = f"{refer_balance:.2f} BDT"
+    if not conn:
+        await update.message.reply_text("দুঃখিত! ডেটাবেস সংযোগে সমস্যা হচ্ছে।")
+        return
 
-    # রেফারেল লিঙ্ক
-    referral_link = f"t.me/{context.bot.username}?start={user_id}"
+    cursor = conn.cursor()
     
-    # মেসেজ ডিজাইন (আপনার দেওয়া ফরম্যাট অনুযায়ী)
-    message = (
-        f"✅ **রেফার করে উপার্জন করুন** 🎉\n"
-        f"✅ **যত বেশি রেফার তত বেশি ইনকাম** 🎉\n\n"
-        f"🍩 🎀 `𝑅𝐸𝐹𝐹𝐸𝑅 𝑅𝐸𝒲𝒜𝑅𝒟𝒮` 🎀 🍩\n\n"
-        f"🔥 **REFER SANCTION** 🔥\n\n"
+    try:
+        # 1. Fetch user's referral balance
+        cursor.execute(
+            "SELECT refer_balance FROM users WHERE user_id = %s",
+            (user_id,)
+        )
+        result = cursor.fetchone()
         
-        f"1️⃣_🆕 `N͢E͢W͢ M͢E͢M͢B͢E͢R͢ J͢O͢I͢N͢I͢N͢G͢`🤝\n"
-        f"🎁 **ʀᴇᴡᴀʀᴅ** : **40 TK** 🎉 (প্রতি জয়েনিংয়ে)\n\n"
+        if result:
+            refer_balance = result[0]
+        else:
+            refer_balance = 0.00
+            
+        # 2. Count the total number of users referred by this user
+        cursor.execute(
+            "SELECT COUNT(user_id) FROM users WHERE referrer_id = %s",
+            (user_id,)
+        )
+        referral_count = cursor.fetchone()[0]
         
-        f"2️⃣_✨ `P͢R͢E͢M͢I͢U͢M͢ S͢U͢B͢S͢C͢R͢I͢P͢T͢I͢O͢N͢`🎨\n"
-        f"🎁 **ʀᴇᴡᴀʀᴅ** : **25%** (প্রিমিয়াম কেনার মূল্যের উপর)\n\n"
+        # Create the dynamic referral link
+        referral_link = f"https://t.me/{context.bot.username}?start={user_id}"
         
-        f"🆕 **MENBERS** : (যারা জয়েন করেছে এবং ফ্রি প্ল্যানে কাজ করছে): **{new_members} জন**\n"
-        f"✨ **MEMBES** : (যারা রেফারারের মাধ্যমে প্রিমিয়াম নিয়েছে): **{premium_members} জন**\n"
-        f"📢 **MEMBERS** : (সমস্ত রেফারার - প্রিমিয়াম এবং ফ্রী প্ল্যান ইউজার): **{total} জন**\n\n"
+        # 3. Create the message (Fully Cleaned & Dynamic)
+        message = (
+            "✅ রেফাফর করে উপার্জন করুন 🎉🎊\n"
+            "✅ যত বেশি রেফার তত বেশি ইনকাম💰\n"
+            "🔥 **REFER REWARDS** 🎁\n"
+            "----------------------------------------\n"
+            "1️⃣ ɴᴇᴡ **ᴍᴇᴍʙᴇʀ ᴊᴏɪɴɪɴɢ** 🎊\n"
+            f"**ʀᴇᴡᴀʀᴅ** : **{REFERRAL_BONUS_JOINING:.2f} ᴛᴋ**\n"
+            "2️⃣ ᴘʀᴇᴍɪᴜᴍ sᴜʙsᴄʀɪᴘᴛɪᴏɴ 💸\n"
+            "ʀᴇᴡᴀʀᴅ : **25%**\n"
+            "----------------------------------------\n"
+            "🆕 **ғʀᴇᴇ ᴍᴇᴍʙᴇʀs** : **{referral_count}** জন\n" 
+            "✨ **ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇs** : **0** জন\n" 
+            "📣 **ᴛᴏᴛᴀʟ ʀᴇғᴇʀʀᴀʟs** : **{referral_count}** জন\n"
+            "----------------------------------------\n"
+            "💲 **ʏᴏᴜʀ ʀᴇғᴇʀ ʙᴀʟᴀɴᴄᴇ** 💵\n"
+            f"Balance: **{refer_balance:.2f} BDT**\n"
+            "----------------------------------------\n"
+            "🔗 **ʏᴏᴜʀ ʀᴇғᴇʀ ʟɪɴᴋ** 💾\n"
+            f"`{referral_link}`\n\n"
+            "এই লিংক বন্ধুদেরকে শেয়ার করুন এবং উপার্জন শুরু করুন!"
+        )
         
-        f"💰 **YOUR REFER BALANCE** 💰\n"
-        f"💵 **Balance** : **{refer_balance_formatted}**\n\n"
-        
-        f"🎉 **YOUR REFER LINK** 💾\n"
-        f"🔗 : `{referral_link}`\n\n"
-        
-        f"✍️ এই লিংক বন্ধুদেরকে শেয়ার করুন এবং বেশি বেশি উপার্জন করুন 🤑"
-    )
+    except Exception as e:
+        logger.error(f"Referral data fetch error: {e}")
+        message = "রেফারেল তথ্য দেখাতে সাময়িক সমস্যা হচ্ছে।"
+    finally:
+        cursor.close()
+        conn.close()
 
-    await update.message.reply_text(
-        message, 
-        parse_mode='Markdown'
-    )
+    await update.message.reply_text(message, parse_mode='Markdown')
