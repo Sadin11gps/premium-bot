@@ -6,7 +6,7 @@ import bot as main_bot
 # ১. প্রোফাইল মেসেজ তৈরির ফাংশন
 # -----------------
 
-async def profile_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def profile_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """'👤 PROFILE 👤' বাটনে ক্লিক করলে ইউজারের তথ্য দেখায়।"""
     user = update.effective_user
     user_id = user.id
