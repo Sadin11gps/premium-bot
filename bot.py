@@ -160,25 +160,35 @@ def register_user(user_id, referrer_id=None):
         cursor.close()
         conn.close()
 
-# ----------------------------------------------------
-# ডেটাবেস ফাংশন: ইউজারের সমস্ত স্ট্যাটাস ও ব্যালেন্স ফেচ করা
-# ----------------------------------------------------
 def get_user_status(user_id):
-    """ইউজারের সমস্ত ডেটাবেস স্ট্যাটাস ফেচ করে।"""
+    """
+    ডেটাবেস থেকে ইউজারের সমস্ত প্রোফাইল ডেটা (ব্যালেন্স, স্ট্যাটাস ইত্যাদি) প্রদান করে।
+    """
     conn = connect_db()
     if not conn:
         return None
-        
+
     cursor = conn.cursor()
     try:
+        # সমস্ত প্রয়োজনীয় কলাম ফেচ করা
         cursor.execute(
             """
-            SELECT is_premium, expiry_date, premium_balance, free_income, refer_balance, salary_balance, total_withdraw 
-            FROM users WHERE user_id = %s
-            """, 
+            SELECT balance, free_income, refer_balance, salary_balance, 
+                   total_withdraw, is_premium, expiry_date
+            FROM users 
+            WHERE user_id = %s
+            """,
             (user_id,)
         )
-        return cursor.fetchone()
+        status = cursor.fetchone()
+        
+        # যদি ইউজার না থাকে, তবে None রিটার্ন
+        if not status:
+            return None
+
+        # ডেটা টুপল হিসেবে রিটার্ন
+        return status
+        
     except Exception as e:
         logger.error(f"ইউজার স্ট্যাটাস ফেচ করতে সমস্যা: {e}")
         return None
