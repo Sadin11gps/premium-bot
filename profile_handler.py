@@ -1,7 +1,16 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-import bot as main_bot 
+import os 
+import psycopg2 
 
+# --- ডেটাবেস সংযোগ ফাংশন (profile_handler.py-এর জন্য) ---
+def connect_db():
+    DATABASE_URL = os.environ.get("DATABASE_URL")
+    try:
+        conn = psycopg2.connect(DATABASE_URL, sslmode="require")
+        return conn
+    except Exception as e:
+        return None
 # -----------------
 # ১. প্রোফাইল মেসেজ তৈরির ফাংশন
 # -----------------
