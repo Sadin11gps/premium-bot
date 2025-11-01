@@ -8,16 +8,38 @@ import bot as main_bot
 
 async def profile_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """'👤 PROFILE 👤' বাটনে ক্লিক করলে ইউজারের তথ্য দেখায়।"""
-    user = update.effective_user
-    user_id = user.id
+    # ... async def profile_menu(update: Update, context):
+    user_id = update.effective_user.id
     
-    # status: (is_premium, expiry_date, premium_balance, free_income, refer_balance, salary_balance, total_withdraw)
-    # **NOTE:** এই মুহূর্তে bot.py ফাইলে এই কলামগুলো (free_income, refer_balance, etc.) নাও থাকতে পারে,
-    # কিন্তু আমরা ধরে নিচ্ছি আপনার পরবর্তী ধাপে সেগুলি ঠিক করা হবে। 
-    status = main_bot.get_user_status(user_id)
+    # --- ডেটাবেস থেকে ইউজারের স্ট্যাটাস নেওয়া ---
+    status = None
+    conn = connect_db()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            # এখানে আপনি আপনার users টেবিল থেকে প্রয়োজনীয় তথ্য সিলেক্ট করুন:
+            # is_premium, expiry_date, total_withdraw, wallet_address, verify_expiry_date
+            cursor.execute("""
+                SELECT 
+                    is_premium, expiry_date, total_withdraw, wallet_address, verify_expiry_date 
+                FROM users 
+                WHERE user_id = %s
+            """, (user_id,))
+            status = cursor.fetchone()
+
+        except Exception as e:
+            # logger.error(f"Error fetching profile data: {e}") # আপাতত logging দরকার নেই
+            print(f"Error fetching profile data: {e}") 
+            status = None # ত্রুটি হলে
+
+        finally:
+            if conn:
+                conn.close()
     
-    # ডেটা ফরমেটিং
-    if status and len(status) >= 7:
+    # এইখানে আপনার if len(status) >= 7: এই লজিকটি শুরু হবে
+    if status and len(status) >= 5: # এখন status এ ৫টি কলাম আছে
+        # status টি একটি Tuple/List, যেমন: (True, None, 10.50, 'XYZ_ADDR', '2025-01-01') 
+        
         # ডেটাবেস থেকে নতুন ব্যালেন্স কলামের মান পাওয়া যাচ্ছে
         premium_balance = f"{status[2]:.2f} BDT" if status[2] is not None else "0.00 BDT"
         free_income = f"{status[3]:.2f} BDT" if status[3] is not None else "0.00 BDT"
