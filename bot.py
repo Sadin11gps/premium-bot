@@ -8,7 +8,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQu
 # **মডুলার ফাইলগুলি আমদানি করা**
 # আপনার Conversation Handlers এর জন্য প্রয়োজনীয় ফাংশন এবং কনস্ট্যান্ট যোগ করা হলো:
 try:
-    from profile_handler import profile_menu, handle_profile_input, PROFILE_STATE 
+    from profile_handler import profile_menu, handle_wallet_input, PROFILE_STATE 
 except ImportError:
     # যদি profile_command না থাকে, তাহলে শুধু profile_menu ইম্পোর্ট করুন
     from profile_handler import profile_menu, handle_profile_input, PROFILE_STATE
