@@ -231,7 +231,7 @@ def main():
 
     # ২. VERIFY Conversation Handler
     verify_conv_handler = ConversationHandler(
-        entry_points=[CallbackQueryHandler(verify_menu, pattern='^menu_verify$')],
+    entry_points=[CallbackQueryHandler(verify_command, pattern='^Menu_Verify$')],
         states={
             VERIFY_REQUEST: [CallbackQueryHandler(start_verify_request, pattern='^(method_bkash|method_nagad)$')],
             TXN_ID_INPUT: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_tnx_id)],
