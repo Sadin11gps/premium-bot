@@ -128,20 +128,23 @@ async def handle_wallet_input(update: Update, context: ContextTypes.DEFAULT_TYPE
             )
             return PROFILE_STATE #  
             
-        else:
-            #    ( 'menu_home')
-            await query.edit_message_text(message, reply_markup=reply_markup, parse_mode='Markdown')
-            return ConversationHandler.END 
+        # অন্যান্য কলব্যাক ক্যোয়ারি হ্যান্ডেল করুন (যেমন 'menu' বাটন)
+    else: 
+        await query.edit_message_text(
+            message,
+            reply_markup=reply_markup,
+            parse_mode='Markdown'
+        )
+        return ConversationHandler.END
 
-        elif update.message:
-    #    ( ' PROFILE ' )
-            await update.message.reply_text(
-        message,
-        reply_markup=reply_markup,
-        parse_mode='Markdown'
-    )
-    return ConversationHandler.END 
-
+    # মেসেজ থেকে আসলে (যেমন প্রথমবার '👤 PROFILE 👤' চাপলে)
+    elif update.message:
+        await update.message.reply_text(
+            message,
+            reply_markup=reply_markup,
+            parse_mode='Markdown'
+        )
+        return ConversationHandler.END
 
 # --2- .     ---
 #  bot.py      : handle_profile_input
