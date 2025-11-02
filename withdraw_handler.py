@@ -3,7 +3,6 @@ import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, ConversationHandler, MessageHandler, CallbackQueryHandler, filters, CommandHandler
 from db_handler import connect_db, update_balance, get_user_balance, record_withdraw_request, get_pending_withdrawals, update_withdraw_status
-from profile_handler import get_user_data
 
 # Logging সেটআপ
 logger = logging.getLogger(__name__)
