@@ -269,7 +269,7 @@ def main():
     # --- ৪. Admin Action Handlers ---
     # Verify Admin Handler (bot.py তে)
     application.add_handler(CallbackQueryHandler(verify_admin_action_handler, pattern=r'^(verify_accept|verify_reject)_(\d+)$'))
-                                                                                   ^^^
+    
 # Withdraw Admin Handler (bot.py তে)
     application.add_handler(CallbackQueryHandler(withdraw_admin_action_handler, pattern=r'^(withdraw_accept|withdraw_reject)_(\d+)_(\d+\.\d+)$'))
     
