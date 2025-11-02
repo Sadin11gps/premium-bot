@@ -229,7 +229,7 @@ def main():
     application.add_handler(profile_conv_handler)
 
 
-    # ২. VERIFY Conversation Handler
+    # ২. VERIFY Conversation Handlet
 verify_conv_handler = ConversationHandler(
     #...
     states={
