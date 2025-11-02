@@ -32,7 +32,8 @@ logger = logging.getLogger(__name__)
 BOT_TOKEN = os.environ.get("BOT_TOKEN") 
 DATABASE_URL = os.environ.get("DATABASE_URL") 
 ADMIN_ID = os.environ.get("ADMIN_ID", 123456789) # <<<-- আপনার এডমিন আইডি সেট করুন
-
+PORT = int(os.environ.get("PORT", "8080")) 
+WEBHOOK_URL = os.environ.get("WEBHOOK_URL", "")
 # বোনাস কনস্ট্যান্ট (আপনার দেওয়া মান অনুযায়ী)
 REFERRAL_BONUS_JOINING = 40.00 
 
@@ -349,8 +350,17 @@ def main():
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_button_clicks))
     application.add_handler(CallbackQueryHandler(handle_inline_callbacks))
     
-    logger.info("বট চলছে... (Polling Mode)")
-    application.run_polling(poll_interval=3)
+    # Railway-এর জন্য Webhook Mode-এ পরিবর্তন করা হলো
+    try:
+        # Railway-তে 0.0.0.0 তে সব অনুরোধ শুনতে হয়
+        application.run_webhook(
+            listen="0.0.0.0",
+            port=PORT,
+            url_path="",
+        )
+        logger.info(f"বট চলছে... (Webhook Mode) Port: {PORT}")
+    except Exception as e:
+        logger.error(f"Webhook চালুর সমস্যা: {e}")
 
 if __name__ == '__main__':
     main()
