@@ -236,7 +236,6 @@ verify_conv_handler = ConversationHandler(
         SELECT_METHOD: [CallbackQueryHandler(start_verify_flow, pattern='^VERIFY_REQUEST$|^(method_bkash|method_nagad)$')], 
         SUBMIT_TNX: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_tnx_submission)] # ✅ এখানে ফাংশনটি যুক্ত করা হলো
         }
-    #...
     )
     application.add_handler(verify_conv_handler)
 
