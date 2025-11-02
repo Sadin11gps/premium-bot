@@ -133,14 +133,14 @@ async def handle_wallet_input(update: Update, context: ContextTypes.DEFAULT_TYPE
             await query.edit_message_text(message, reply_markup=reply_markup, parse_mode='Markdown')
             return ConversationHandler.END # কথোপকথন শেষ
 
-     elif update.message:
+        elif update.message:
     # মেসেজ থেকে আসলে (প্রথমবার '👤 PROFILE 👤' চাপলে)
-    await update.message.reply_text(
+            await update.message.reply_text(
         message,
-        reply_markup=reply_markup, # <<< এখানে শুধু একবারই যেন থাকে
+        reply_markup=reply_markup,
         parse_mode='Markdown'
-    ) 
-    return ConversationHandler.END# কথোপকথন শেষ
+    )
+            return ConversationHandler.END 
 
 
 # --2- ৪. প্রোফাইল ইনপুট হ্যান্ডলার ফাংশন ---
