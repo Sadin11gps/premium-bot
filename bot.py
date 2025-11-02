@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 # আপনার ফাংশনের নামগুলো অনুযায়ী ইম্পোর্ট করুন
 from profile_handler import profile_menu, handle_wallet_input, PROFILE_STATE
 from refer_handler import refer_command 
-from verify_handler import verify_command, VERIFY_REQUEST, TXN_ID_INPUT 
+from verify_handler import verify_command, SELECT_METHOD, SUBMIT_TNX 
 
 # --- কনস্ট্যান্ট সেটআপ ---
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
