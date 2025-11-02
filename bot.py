@@ -8,7 +8,7 @@ from telegram.ext import (
 from datetime import datetime, timedelta
 
 # আপনার ফাংশনের নামগুলো অনুযায়ী ইম্পোর্ট করুন
-from profile_handler import profile_menu, handle_wallet_input, PROFILE_STATE
+from profile_handler import profile_menu, handle_profile_input, PROFILE_STATE
 from refer_handler import refer_command 
 from verify_handler import verify_command, SELECT_METHOD, SUBMIT_TNX, handle_tnx_submission 
 from withdraw_handler import withdraw_conversation_handler, withdraw_command, handle_withdraw_amount, handle_withdraw_wallet, cancel_withdraw_conversation, WITHDRAW_AMOUNT_INPUT, WITHDRAW_WALLET_INPUT, withdraw_admin_action_handler
