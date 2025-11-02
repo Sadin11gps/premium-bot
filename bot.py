@@ -267,10 +267,10 @@ def main():
     application.add_handler(CallbackQueryHandler(balance_menu, pattern='^menu_balance$')) 
     
     # --- ৪. Admin Action Handlers ---
-    # VERIFY Admin Action Handler
-    application.add_handler(CallbackQueryHandler(verify_admin_action_handler, pattern='^(verify_accept|verify_reject)_(\d+)$'))
-    
-    # WITHDRAW Admin Action Handler (withdraw_handler.py থেকে)
+    # Verify Admin Handler (bot.py তে)
+    application.add_handler(CallbackQueryHandler(verify_admin_action_handler, pattern=r'^(verify_accept|verify_reject)_(\d+)$'))
+                                                                                   ^^^
+# Withdraw Admin Handler (bot.py তে)
     application.add_handler(CallbackQueryHandler(withdraw_admin_action_handler, pattern=r'^(withdraw_accept|withdraw_reject)_(\d+)_(\d+\.\d+)$'))
     
     # --- ৫. Error Handler ---
