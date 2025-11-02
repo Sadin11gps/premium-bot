@@ -3,9 +3,10 @@ import psycopg2
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext, ConversationHandler
 from datetime import datetime
+from telegram.ext import ConversationHandler
 
-# --- ১. কনভার্সেশন স্টেট ---
-PROFILE_STATE = 1 # Wallet address input state
+# Conversation States
+PROFILE_EDIT_STATE, PROFILE_STATE = range(2)
 
 
 # --- ২. ডেটাবেস সংযোগ ফাংশন ---
