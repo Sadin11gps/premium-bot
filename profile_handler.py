@@ -137,7 +137,6 @@ async def handle_wallet_input(update: Update, context: ContextTypes.DEFAULT_TYPE
         )
         return ConversationHandler.END
 
-    # মেসেজ থেকে আসলে (যেমন প্রথমবার '👤 PROFILE 👤' চাপলে)
     elif update.message:
         await update.message.reply_text(
             message,
