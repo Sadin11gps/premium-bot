@@ -209,56 +209,77 @@ async def error_handler(update: Update, context):
 
 # --- প্রধান ফাংশন ---
 def main():
-    # ডেটাবেস মাইগ্রেশন নিশ্চিত করা
-    create_table_if_not_exists()
-    
-    application = Application.builder().token(BOT_TOKEN).build()
+    # ডেটাবেস মাইগ্রেশন নিশ্চিত করা 
+    create_table_if_not_exists() 
 
-    # Conversation Handlers
-    # ১. PROFILE Conversation Handler (ওয়ালেট সেভ করার জন্য)
+    application = Application.builder().token(os.environ.get("BOT_TOKEN")).build()
+
+    # --- ১. Conversation Handlers ---
+    
+    # ১. PROFILE Conversation Handler 
     profile_conv_handler = ConversationHandler(
-        entry_points=[CallbackQueryHandler(profile_menu, pattern='^menu_profile$')],
+        entry_points=[CallbackQueryHandler(profile_menu, pattern='^edit_profile$')],
         states={
-            PROFILE_STATE: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_wallet_input)],
+            PROFILE_STATE: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_profile_input)]
         },
-        fallbacks=[CallbackQueryHandler(main_menu, pattern='^menu_home$')],
-        map_to_parent={
-            PROFILE_STATE: PROFILE_STATE # প্রয়োজন হলে অন্য কনভার্সেশন হ্যান্ডলারে ফিরে যাওয়ার জন্য
-        }
+        fallbacks=[CallbackQueryHandler(profile_menu, pattern='^cancel_edit$')]
     )
     application.add_handler(profile_conv_handler)
 
-
-    # ২. VERIFY Conversation Handlet
-verify_conv_handler = ConversationHandler(
-    #...
-    states={
-        SELECT_METHOD: [CallbackQueryHandler(start_verify_flow, pattern='^VERIFY_REQUEST$|^(method_bkash|method_nagad)$')], 
-        SUBMIT_TNX: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_tnx_submission)] # ✅ এখানে ফাংশনটি যুক্ত করা হলো
-        }
+    # ২. VERIFY Conversation Handler 
+    verify_conv_handler = ConversationHandler(
+        entry_points=[CallbackQueryHandler(start_verify, pattern='^menu_verify$')],
+        states={
+            SELECT_METHOD: [CallbackQueryHandler(verify_method_selection, pattern='^(method_bkash|method_nagad)$')],
+            SUBMIT_TNX: [MessageHandler(filters.TEXT & ~filters.COMMAND, submit_txn_id)]
+        },
+        fallbacks=[CommandHandler("cancel", cancel_conversation)]
     )
     application.add_handler(verify_conv_handler)
-
-
-    # Command Handlers
-    application.add_handler(CommandHandler("start", start))
-
-    # CallbackQuery Handlers
-    application.add_handler(CallbackQueryHandler(main_menu, pattern='^menu_home$'))
-    application.add_handler(CallbackQueryHandler(refer_menu, pattern='^menu_refer$'))
-    application.add_handler(CallbackQueryHandler(withdraw_placeholder, pattern='^menu_withdraw$'))
-
-    # VERIFY Admin Action Handler
-    application.add_handler(CallbackQueryHandler(handle_admin_callback, pattern='^(verify_accept|verify_reject)_(\d+)$'))
-
-    # Simple Placeholder Handlers
-    application.add_handler(CallbackQueryHandler(simple_placeholder, pattern='^menu_(premium|task|history|how_it_works|support)$'))
     
-    # Error Handler
-    application.add_handler(application.error_handler)
+    # ৩. WITHDRAW Conversation Handler (নতুন)
+    withdraw_conversation_handler = ConversationHandler(
+        entry_points=[CommandHandler("withdraw", withdraw_command)],
+        states={
+            WITHDRAW_AMOUNT_INPUT: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_withdraw_amount)],
+            WITHDRAW_WALLET_INPUT: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_withdraw_wallet),
+                CallbackQueryHandler(handle_withdraw_wallet, pattern="^(wallet_confirm|wallet_new)$")
+            ]
+        },
+        fallbacks=[
+            CommandHandler("cancel", cancel_withdraw_conversation),
+            CallbackQueryHandler(cancel_withdraw_conversation, pattern="^cancel$")
+        ]
+    )
+    application.add_handler(withdraw_conversation_handler) 
 
-    # রান করা
+    # --- ২. Simple Command Handlers ---
+    application.add_handler(CommandHandler("start", start_command))
+    application.add_handler(CommandHandler("profile", profile_menu))
+    application.add_handler(CommandHandler("refer", refer_command))
+    application.add_handler(CommandHandler("withdraw", withdraw_command)) 
+    
+    # --- ৩. CallbackQuery Handlers (মেনু বাটনগুলোর জন্য) ---
+    application.add_handler(CallbackQueryHandler(profile_menu, pattern='^menu_profile$'))
+    application.add_handler(CallbackQueryHandler(refer_command, pattern='^menu_refer$'))
+    application.add_handler(CallbackQueryHandler(start_verify, pattern='^menu_verify$'))
+    application.add_handler(CallbackQueryHandler(balance_menu, pattern='^menu_balance$')) 
+    
+    # --- ৪. Admin Action Handlers ---
+    # VERIFY Admin Action Handler
+    application.add_handler(CallbackQueryHandler(verify_admin_action_handler, pattern='^(verify_accept|verify_reject)_(\d+)$'))
+    
+    # WITHDRAW Admin Action Handler (withdraw_handler.py থেকে)
+    application.add_handler(CallbackQueryHandler(withdraw_admin_action_handler, pattern='^(withdraw_accept|withdraw_reject)_(\d+)_(\d+\.?\d*)$'))
+    
+    # --- ৫. Error Handler ---
+    application.add_handler(CallbackQueryHandler(error_handler))
+    application.add_handler(application.error_handler) # এটি সাধারণত ব্যবহার করা হয়
+    
+    # --- ৬. রান করুন ---
     application.run_polling(poll_interval=1.0)
+
 
 if __name__ == '__main__':
     main()
