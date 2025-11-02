@@ -33,7 +33,7 @@ def connect_db():
 
 # --- ৩. প্রোফাইল মেনু (এন্ট্রি পয়েন্ট ফাংশন) ---
 # আপনার bot.py এখন এটি ইম্পোর্ট করবে: profile_menu
-async def profile_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_wallet_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """ইউজারের প্রোফাইল তথ্য দেখায় এবং ওয়ালেট সেট করার অপশন দেয়।"""
     user_id = update.effective_user.id
     status = None
@@ -133,21 +133,17 @@ async def profile_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.edit_message_text(message, reply_markup=reply_markup, parse_mode='Markdown')
             return ConversationHandler.END # কথোপকথন শেষ
 
-    elif update.message:
-        # মেসেজ থেকে আসলে (প্রথমবার '👤 PROFILE 👤' চাপলে)
-        await update.message.reply_text(
-            message, 
-            reply_markup=reply_markup, 
-            parse_mode='Markdown',
-            # মেনু বাটন সরিয়ে শুধু একবার রিপ্লাই করার জন্য
-            reply_markup=InlineKeyboardMarkup(keyboard) 
-        )
-        return ConversationHandler.END # যেহেতু এটি শুধু মেনু দেখাচ্ছে, তাই শেষ করে দেওয়া ভালো।
-    
-    return ConversationHandler.END
+     elif update.message:
+    # মেসেজ থেকে আসলে (প্রথমবার '👤 PROFILE 👤' চাপলে)
+    await update.message.reply_text(
+        message,
+        reply_markup=reply_markup, # <<< এখানে শুধু একবারই যেন থাকে
+        parse_mode='Markdown'
+    ) 
+    return ConversationHandler.END# কথোপকথন শেষ
 
 
-# --- ৪. প্রোফাইল ইনপুট হ্যান্ডলার ফাংশন ---
+# --2- ৪. প্রোফাইল ইনপুট হ্যান্ডলার ফাংশন ---
 # আপনার bot.py এই ফাংশনটি ইম্পোর্ট করে ব্যবহার করবে: handle_profile_input
 async def handle_profile_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """ওয়ালেট ইনপুট হ্যান্ডলার হিসেবে কাজ করবে।"""
