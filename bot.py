@@ -7,13 +7,10 @@ from telegram.ext import (
 )
 from datetime import datetime, timedelta
 
-# আপনার অন্যান্য হ্যান্ডলারগুলো আমদানি করুন
-from profile_handler import profile_menu, handle_wallet_input, PROFILE_STATE
-from refer_handler import refer_menu
-from verify_handler import (
-    verify_menu, start_verify_request, handle_tnx_id, 
-    handle_admin_callback, VERIFY_REQUEST, TXN_ID_INPUT
-)
+# আপনার ফাংশনের নামগুলো অনুযায়ী ইম্পোর্ট করুন
+from profile_handler import profile_menu, handle_wallet_input
+from refer_handler import refer_command 
+from verify_handler import verify_command, verify_conversation_handler
 
 # --- কনস্ট্যান্ট সেটআপ ---
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
