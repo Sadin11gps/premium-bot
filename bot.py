@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 # আপনার ফাংশনের নামগুলো অনুযায়ী ইম্পোর্ট করুন
 from profile_handler import profile_menu, handle_wallet_input, PROFILE_STATE
 from refer_handler import refer_command 
-from verify_handler import verify_command, SELECT_METHOD, SUBMIT_TNX 
+from verify_handler import verify_command, SELECT_METHOD, SUBMIT_TNX, handle_tnx_submission 
 
 # --- কনস্ট্যান্ট সেটআপ ---
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
@@ -230,13 +230,13 @@ def main():
 
 
     # ২. VERIFY Conversation Handler
-    verify_conv_handler = ConversationHandler(
-    entry_points=[CallbackQueryHandler(verify_command, pattern='^Menu_Ver')],
+verify_conv_handler = ConversationHandler(
+    #...
     states={
-        SELECT_METHOD: [CallbackQueryHandler(...)], # ✅ সঠিক নাম
-        SUBMIT_TNX: [MessageHandler(...)]          # ✅ সঠিক নাম
+        SELECT_METHOD: [CallbackQueryHandler(start_verify_flow, pattern='^VERIFY_REQUEST$|^(method_bkash|method_nagad)$')], 
+        SUBMIT_TNX: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_tnx_submission)] # ✅ এখানে ফাংশনটি যুক্ত করা হলো
     },
-    fallbacks=[CallbackQueryHandler(cancel_conversation, pattern='^VERIFY_REQUEST$')] # এখানে VERIFY_REQUEST-ই রাখুন যদি এটি একটি বাটন ডেটা হয়
+    #...
 )
     application.add_handler(verify_conv_handler)
 
