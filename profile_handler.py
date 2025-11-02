@@ -34,7 +34,7 @@ def connect_db():
 # --- .   (  ) ---
 #  bot.py    : profile_menu
 async def handle_wallet_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """         """
+    """ইউজারের প্রোফাইল তথ্য দেখেন ও সেভ করেন"""
     user_id = update.effective_user.id
     status = None
     conn = connect_db()
